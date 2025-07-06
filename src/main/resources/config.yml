@@ -8,3 +8,24 @@ db-mysql:
     name: my_database
 db-sqlite:
     file: /path/to/database.db
+DieuKienChungNhomItem:
+    VatPhamA:
+        Lore: "✪✪✪✪✪✪✪✪✪✪✪✪✪✪✪" #có lore này mới cho chuyển
+        Type: [DIAMOND_SWORD, DIAMOND_AXE, DIAMOND_BOOTS]
+DieuKienRiengTungItem: #phu hợp điều kiện VatPhamA là dc chuyển
+    VatPhamA:
+        Lore: "&aĐây là Trang Sức" #có lore này mới cho chuyển
+        Type: WATCH
+    VatPhamB:
+        Lore: "&aĐây là Ring" #có lore nàoy mới cho chuyển
+        Type: STONE
+    VatPhamC:
+        Lore: "&aĐây là Dây Chuyền" #có lore này mới cho chuyển
+        Type: STONE
+NhanItemCooldown: 5 #MUST BE AN NUMBER
+NhanThanhCongMessage: Succeed!
+XacNhanMessage: Bạn có %n% item để nhận, chắc chắn dọn kho để nhận /nhanitem lần nữa để nhận 		#với %n% là số item nhận, vd: Bạn có 5 item để nhận, chắc chắn...
+ChuyenThanhCongMessage: Bạn đã Chuyển item thành công, Bạn đang có %n% item trong kho.
+ChuyenDieuKienThatbaiMessage: Item này không nằm trong danh sách được chuyển
+NoRequestMessage: Bạn không có đủ point để thực hiện chuyển item
+# ServerBridgeNoRun: Máy chủ chuyển item hiện tại chưa mở không thể thực hiện nhận và chuyển

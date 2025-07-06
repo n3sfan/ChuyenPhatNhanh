@@ -16,7 +16,7 @@ public class ItemTransfer {
     /**
      * Saves an item to the database for another player to claim.
      */
-    public void sendItem(UUID targetUuid, ItemStack item, String originServer) {
+    public static void sendItem(UUID targetUuid, ItemStack item, String originServer) {
         String base64Item = ItemSerializer.itemStackToBase64(item);
 
         String sql = "INSERT INTO pending_items (target_uuid, item_data, origin_server) VALUES (?, ?, ?);";
@@ -39,7 +39,8 @@ public class ItemTransfer {
      * Checks the database for items, gives them to the player, and deletes the entries.
      * This operation is ATOMIC.
      */
-    public void receiveItems(Player player) {
+
+    public static List<ItemStack> receiveItems(Player player, boolean isFirstTime) {
         String selectSql = "SELECT id, item_data FROM pending_items WHERE target_uuid = ?;";
         List<Integer> claimedIds = new ArrayList<>();
         List<ItemStack> receivedItems = new ArrayList<>();
@@ -70,32 +71,35 @@ public class ItemTransfer {
                 }
             }
 
-            // If we successfully retrieved items, delete them from the database
-            if (!claimedIds.isEmpty()) {
-                String deleteSql = "DELETE FROM pending_items WHERE id = ?;";
-                try (PreparedStatement deletePstmt = conn.prepareStatement(deleteSql)) {
-                    for (Integer id : claimedIds) {
-                        deletePstmt.setInt(1, id);
-                        deletePstmt.addBatch();
+            if (!isFirstTime) {
+                // If we successfully retrieved items, delete them from the database
+                if (!claimedIds.isEmpty()) {
+                    String deleteSql = "DELETE FROM pending_items WHERE id = ?;";
+                    try (PreparedStatement deletePstmt = conn.prepareStatement(deleteSql)) {
+                        for (Integer id : claimedIds) {
+                            deletePstmt.setInt(1, id);
+                            deletePstmt.addBatch();
+                        }
+                        deletePstmt.executeBatch();
                     }
-                    deletePstmt.executeBatch();
                 }
             }
 
             conn.commit(); // Finalize the transaction
-
-            // Now give the items to the player
-            for (ItemStack item : receivedItems) {
-                // Handle full inventory!
-                if (player.getInventory().firstEmpty() == -1) {
-                    player.getWorld().dropItem(player.getLocation(), item);
-                    player.sendMessage("§cYour inventory was full, an item was dropped at your feet!");
-                } else {
-                    player.getInventory().addItem(item);
+            if(!isFirstTime) {
+                // Now give the items to the player
+                for (ItemStack item : receivedItems) {
+                    // Handle full inventory!
+                    if (player.getInventory().firstEmpty() == -1) {
+                        player.getWorld().dropItem(player.getLocation(), item);
+                        player.sendMessage("§cYour inventory was full, an item was dropped at your feet!");
+                    } else {
+                        player.getInventory().addItem(item);
+                    }
                 }
-            }
-            if (!receivedItems.isEmpty()){
-                player.sendMessage("§aYou have claimed " + receivedItems.size() + " item(s)!");
+//                if (!receivedItems.isEmpty()) {
+//                    player.sendMessage("§aYou have claimed " + receivedItems.size() + " item(s)!");
+//                }
             }
 
         } catch (SQLException e) {
@@ -104,5 +108,6 @@ public class ItemTransfer {
             e.printStackTrace();
             player.sendMessage("§cAn error occurred while claiming your items. Please try again later.");
         }
+        return receivedItems;
     }
 }

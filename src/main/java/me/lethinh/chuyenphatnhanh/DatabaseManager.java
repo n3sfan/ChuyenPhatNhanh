@@ -49,14 +49,16 @@ public class DatabaseManager {
         Connection conn = getConnection();
         try (Statement stmt = conn.createStatement()) {
             String s = "CREATE TABLE IF NOT EXISTS `pending_items` (\n" +
-                    "  `id` INT NOT NULL AUTO_INCREMENT,\n" +
+                    "  `id` INTEGER PRIMARY KEY\n,\n" +
                     "  `target_uuid` VARCHAR(36) NOT NULL,\n" +
                     "  `item_data` MEDIUMTEXT NOT NULL,\n" +
                     "  `origin_server` VARCHAR(50) NULL,\n" +
-                    "  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" +
-                    "  PRIMARY KEY (`id`),\n" +
-                    "  INDEX `idx_target_uuid` (`target_uuid`)\n" +
+                    "  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" +
                     ");";
+            stmt.executeUpdate(s);
+        }
+        try (Statement stmt = conn.createStatement()) {
+            String s = "CREATE INDEX IF NOT EXISTS idx_target_uuid ON pending_items(target_uuid);\n";
             stmt.executeUpdate(s);
         }
     }

@@ -15,16 +15,23 @@ repositories {
         name = "sonatype"
         url = "https://oss.sonatype.org/content/groups/public/"
     }
+    maven {
+        url = 'https://repo.rosewooddev.io/repository/public/'
+    }
+    maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+
 }
 
 dependencies {
     compileOnly "org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT"
     compileOnly group: 'org.xerial', name: 'sqlite-jdbc', version: '3.32.3.2'
-    compileOnly group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
+//    compileOnly group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
     compileOnly "com.zaxxer:HikariCP:4.0.3"
+    compileOnly 'org.black_ixx:playerpoints:3.3.2'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
 }
 
-def targetJavaVersion = 8
+def targetJavaVersion = 11
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
@@ -50,3 +57,31 @@ processResources {
         expand props
     }
 }
+
+
+jar {
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+def mcServerPath = "/home/fynrae/Workspace/"
+// def mcServer13Path = "D:\\Workspace\\MCServer1_13\\"
+
+task copyJar {
+    copy {
+        from jar.archiveFile
+        into(mcServerPath + "Server1/plugins")
+    }
+    copy {
+        from jar.archiveFile
+        into(mcServerPath + "Server2/plugins")
+    }
+    doLast {
+//        copy {
+//            from jar.archiveFile
+//            into(mcServer13Path + "plugins")
+//        }
+    }
+}
+
+//assemble.finalizedBy copyJar
